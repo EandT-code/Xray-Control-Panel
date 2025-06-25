@@ -415,6 +415,15 @@ void loop()
 
         if (READY == true && EXPOSURE == false)
         {
+			// Warning for Exposure Button if pressed before 15 seconds of READY mode
+            if (millis() - readyStartTime < 15000) // Less than 15 seconds
+			{
+				lv_label_set_text(ui_Labelstatus, "Wait for 15 sec");
+				lv_timer_handler(); /*let the GUI do its work */
+				Serial.println("Exposure blocked. Wait for 15 sec.");
+				lv_timer_handler(); /*let the GUI do its work */
+				return;				// Don't allow exposure
+			}
             EXPOSURE = true;
             // lv_timer_handler();
             lv_label_set_text(ui_Labelstatus, "EXPOSURE");
