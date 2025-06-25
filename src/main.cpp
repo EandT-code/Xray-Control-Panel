@@ -3,17 +3,10 @@
 #include <Arduino_GFX_Library.h> // Define Arduino GFX library header
 #include "pins_info.h"			 // Define Pin define header
 #include <ezButton.h>			 // Define buttons hearder
-// #include "MCP4725.h"			 // MCP4725 library
-#include <Adafruit_MCP4725.h> // MCP4725 library for DAC
+#include "MCP4725.h"			 // MCP4725 library
 #include "Wire.h"				 //I2C bus for MCP
 
-// Declare second I2C bus using hardware I2C peripheral 1
-// TwoWire Wire1 = TwoWire(1); 
-
-// MCP4725 MCP(0x60); // Initializing MCP Library with address bus 0x60
-
-Adafruit_MCP4725 MCP1; // MCP4725 instance for DAC 1
-Adafruit_MCP4725 MCP2; // MCP4725 instance for DAC 2
+MCP4725 MCP(0x60); // Initializing MCP Library with address bus 0x60
 
 // IO Pin Assign - Digital OUTPUTS
 
@@ -296,25 +289,14 @@ void setup()
 
 	set_outputPin(); // Set output pin states
 
-	// Wire.begin(20, 19); // Setup I2C communication with DAC
+	Wire.begin(20, 19); // Setup I2C communication with DAC
 
-	// MCP.begin(); // Initialize the MCP
+	MCP.begin(); // Initialize the MCP
 
-	Wire1.begin(20, 19);         // Default I2C for MCP1
-	MCP1.begin(0x60, &Wire);    // Pass the address and Wire instance
-
-	Wire1.begin(2, 18);         // Create second I2C bus (must declare Wire1 globally)
-	MCP2.begin(0x61, &Wire1);   // Second DAC on second bus
-
-	// MCP1.begin(0x60, &Wire); // Initialize MCP1 with
-
-	MCP1.setVoltage(2048, false); // ~50% of 12-bit range (0–4095)
-	MCP2.setVoltage(1024, false); // ~25% of 12-bit range (0–4095)
-
-	// MCP.setMaxVoltage(2.5); // Setting maximum voltage to 2.5 to get max 50% duty cycle
+	MCP.setMaxVoltage(2.5); // Setting maximum voltage to 2.5 to get max 50% duty cycle
 	Serial.print("last write data (from setup): ");
-	// Serial.println(MCP.getLastWriteEEPROM());
-	// MCP.setVoltage(0);
+	Serial.println(MCP.getLastWriteEEPROM());
+	MCP.setVoltage(0);
 }
 
 void loop()
@@ -530,8 +512,7 @@ void loop()
 
 					DAC_input_data = (4095 * dac_volt_target / ref_voltage) * (1 - (pow(2, -(3 * (time_step) / risetime)))); // to be used when duty cycle is being controlled
 					// DAC_input_data = (4095*kv/100)*(1-(pow(2,-(3*(test1)/risetime)))); // to be used when duty cycle is being controlled
-					// MCP1.setValue(DAC_input_data);
-					MCP1.setVoltage((uint16_t)DAC_input_data, false);
+					MCP.setValue(DAC_input_data);
 					// lv_label_set_text(ui_Labelstatus, String(DAC_input_data).c_str());
 					//  time_step +=1;
 					//  mcp_set_voltage = dac_volt_target - (dac_volt_target)*(exp(-1*2*time_step/risetime));
@@ -553,8 +534,7 @@ void loop()
 					break;
 				}
 			}
-			// MCP.setVoltage(0);
-			MCP1.setVoltage(0, false);
+			MCP.setVoltage(0);
 
 			READY = false;
 			EXPOSURE = false;

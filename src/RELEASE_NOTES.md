@@ -1,3 +1,70 @@
+##  Release Note – v0.4.6
+**Project Title:** Embedded X-Ray Control Panel – ESP32 GUI System  
+**Release Date:** June 12, 2025  
+**Release Version:** v0.4.6  
+**Author:** Vedant Mishra
+
+# New Feature: Dual MCP4725 DAC Control Using Rob Tillaart Library
+**Description:**
+Enabled support for controlling two separate MCP4725 DAC modules on the ESP32-S2 using the RobTillaart/MCP4725 library, configured on two different I2C buses.
+
+--- 
+
+# Purpose:
+Allows fine-grained analog control via two independent DAC outputs.
+
+Supports hardware designs requiring dual voltage control for separate modules.
+
+Provides flexibility in DAC pin routing by assigning separate SDA/SCL lines.
+
+---
+
+##  Technical Implementation:
+- Two separate TwoWire instances were initialized:
+
+        TwoWire I2C1 = TwoWire(0);  // Default I2C
+        TwoWire I2C2 = TwoWire(1);  // Secondary I2C
+
+- Two MCP4725 DACs were assigned different addresses and buses:
+
+        MCP4725 MCP1(0x60, &I2C1);  // DAC1 on I2C1
+        MCP4725 MCP2(0x61, &I2C2);  // DAC2 on I2C2
+
+- Inside setup():
+
+        I2C1.begin(20, 19);  // SDA, SCL for MCP1
+        I2C2.begin(2, 18);   // SDA, SCL for MCP2
+
+        MCP1.begin();  // Initialize DAC1
+        MCP2.begin();  // Initialize DAC2
+
+- Initial voltages set:
+
+        MCP1.setVoltage(0);     // Start at 0V
+        MCP2.setVoltage(0);     // Start at 0V
+        MCP1.setMaxVoltage(2.5); // Limit max voltage for safety
+        MCP2.setMaxVoltage(2.5);
+
+---
+
+### Tested On:
+**Board:** ESP32-S2 Saola v1.2
+**Framework:** PlatformIO + Arduino
+**Library:** RobTillaart/MCP4725@0.4.0
+**I2C Bus Routing:**
+- MCP1 on GPIO 20 (SDA), 19 (SCL)
+- MCP2 on GPIO 2 (SDA), 18 (SCL)
+
+**Output Verification:**
+- Dual analog outputs independently verified using serial monitor and oscilloscope.
+- DAC voltage change confirmed in real-time based on control logic in loop().
+
+
+
+
+
+
+
 ##  Release Note – v0.4.5 
 **Project Title:** Embedded X-Ray Control Panel – ESP32 GUI System  
 **Release Date:** June 12, 2025  
